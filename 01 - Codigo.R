@@ -139,36 +139,36 @@ trainControl(method  = "repeatedcv", # validación cruzada repetida
 
 # Particionamiento usando tidymodels --------------------------------------
 
-(datos |> initial_split(strata = SEXO, prop = 0.8) -> tidy_split)
+(datos |> initial_split(strata = admit, prop = 0.8) -> tidy_split)
 tidy_split |> training() -> tidy_train
 tidy_split |> testing() -> tidy_test
 
 tidy_train |> dim()
 tidy_test |> dim()
 
-tidy_train |> count(SEXO) |> mutate(Porc = n/sum(n))
-tidy_test |> count(SEXO) |> mutate(Porc = n/sum(n))
+tidy_train |> count(admit) |> mutate(Porc = n/sum(n))
+tidy_test |> count(admit) |> mutate(Porc = n/sum(n))
 
-tidy_train |> vfold_cv(v = 10, repeats = 1, strata = SEXO) -> folds
+tidy_train |> vfold_cv(v = 10, repeats = 1, strata = admit) -> folds
 folds
 folds$id
 folds$splits
 
 map_dbl(folds$splits,
         function(x) {
-          dat <- as.data.frame(x)$SEXO
-          mean(dat == "MASCULINO")
-        })
+          dat <- as.data.frame(x)$admit
+          mean(dat == "0")
+        }) |> round(3)
 
-datos |> vfold_cv(v = 10, repeats = 2, strata = SEXO) -> folds_rep2
+datos |> vfold_cv(v = 10, repeats = 2, strata = admit) -> folds_rep2
 folds_rep2
 folds_rep2$id
 folds_rep2$splits
 
 map_dbl(folds_rep2$splits,
         function(x) {
-          dat <- as.data.frame(x)$SEXO
-          mean(dat == "MASCULINO")
-        })
+          dat <- as.data.frame(x)$admit
+          mean(dat == "0")
+        }) |> round(3)
 
-datos$SEXO |> table() |> prop.table()
+datos$admit |> table() |> prop.table()
