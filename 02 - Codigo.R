@@ -25,7 +25,7 @@ d1 |> right_join(d2)
 d1 |> anti_join(d2)
 d1 |> full_join(d2)
 
-read.csv2('02 - estudiantes.csv') -> datos_estudiantes
+read.csv2('02 - estudiantes.csv',nrows = 212) -> datos_estudiantes
 read_excel('02 - carreras.xlsx') -> datos_carreras
 read_xls('02 - zonas.xls') -> datos_zonas
 
@@ -33,7 +33,15 @@ datos_estudiantes |>
   inner_join(datos_zonas) |> 
   inner_join(datos_carreras) -> datos_integrados
 
+datos_estudiantes |> 
+  full_join(datos_zonas) |> 
+  full_join(datos_carreras) -> datos_integrados2
+
+identical(datos_integrados,datos_integrados2)
+
 write_xlsx(x = datos_integrados, path = "02 - integrado.xlsx")
+
+write_xlsx(x = cars, path = "carros.xlsx")
 
 datos_integrados |> 
   filter(ZONA == "ESTE" & FACULTAD == "Economía") |> 
