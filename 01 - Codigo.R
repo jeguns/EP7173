@@ -90,7 +90,8 @@ trainControl(method = "cv", # validación cruzada
 
 #train(..., trControl = caret_control_A, ...)
 
-trainControl(index = folds_tra,
+trainControl(method = "cv",
+             index  = folds_tra,
              savePredictions = TRUE,
              classProbs = TRUE) -> caret_control_B
 
