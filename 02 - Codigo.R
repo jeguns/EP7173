@@ -168,6 +168,10 @@ datos_normalizados4 -> datos_limpieza
 
 datos_limpieza |> skim()
 
+data.frame(X1 = c("Lima",NA,"Callao"),
+           X2 = c("abb","b1",""),
+           X3 = c("sí","no","   ")) |> skim()
+
 datos_limpieza |> pull(FACULTAD) |> table()
 datos_limpieza |> 
   mutate(FACULTAD = ifelse(FACULTAD=="Meteorología","Ciencias",FACULTAD)) -> datos_limpio
