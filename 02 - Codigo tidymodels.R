@@ -1,28 +1,44 @@
+
+
+# Paquetes ----------------------------------------------------------------
+
 library(readxl)
 library(tidyverse)
 library(tidymodels)
 
-datos = read_excel('02 - datos_tidy.xlsx')
-datos
+# Lectura de datos --------------------------------------------------------
 
-### --> Limpieza con dplyr o lubridate <--- ###
+# El archivo 02 - datos_tidy.xlsx contiene datos acerca de recomendaciones dadas 
+# (o no) por clientes así como características de los mismos
+# RECOM = 0 si no recomienda, 1 si recomienda
+# F_NAC = Fecha de nacimiento
+# F_INGR = Fecha de ingreso del cliente
+# TIPO_CLIENTE = Categoría que va del 1 al 3 (3 tiene más beneficios)
+# INGRESO = Ingreso mensual (en soles)
+# NUM_HIJOS = Cantidad de hijos
+
+datos = read_excel('02 - datos_tidy.xlsx')
+datos |> str()
+
+# Uso de tidymodels -------------------------------------------------------
 
 datos |> initial_split(prop = 0.75, strata = RECOM) -> division
 
 division |> training() -> training_set
-
+training_set |> str()
 division |> testing() -> testing_set
+testing_set |> str()
 
 training_set |> 
   recipe(RECOM ~ .)
 
 training_set |> 
   recipe(RECOM ~ .) |> 
-  step_date(F_NAC,F_INGR,features = c("dow", "month", "year"))
+  step_date(F_NAC,F_INGR,features = c("dow","semester","quarter"))
 
 training_set |> 
   recipe(RECOM ~ .) |> 
-  step_date(F_NAC,F_INGR,features = c("semester","quarter")) |> 
+  step_date(F_NAC,F_INGR,features = c("dow","semester","quarter")) |> 
   prep() -> receta
 
 receta
@@ -51,6 +67,16 @@ training_set |>
   step_unknown(TIPO_CLIENTE, new_level = "NO CLASIFICADO") |>
   prep() |> 
   juice() 
+
+training_set |> 
+  recipe(RECOM ~ .) |> 
+  step_num2factor(TIPO_CLIENTE,
+                  transform = function(x) x,
+                  levels = c("REGULAR","FRECUENTE","VIP")) |> 
+  step_unknown(TIPO_CLIENTE, new_level = "NO CLASIFICADO") |>
+  prep() |> 
+  juice() |> 
+  str()
 
 training_set |> 
   recipe(RECOM ~ .) |> 
