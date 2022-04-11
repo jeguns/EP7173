@@ -56,7 +56,7 @@ datos_integrados |> inner_join(datos_notas,
                                       "APELLIDO2"="APELLIDOM")) -> datos_transformacion
 
 datos_transformacion |> 
-  mutate('NOMBRE COMPLETO' = paste(NOMBRE,APELLIDO1,APELLIDO2)) |> 
+  mutate("NOMBRE COMPLETO" = paste(NOMBRE,APELLIDO1,APELLIDO2)) |> 
   mutate(FNAC = FNAC |> as.Date(format="%d/%m/%Y")) |> 
   mutate(EDAD = ((today()-FNAC)/365) |> floor() |> as.numeric()) -> datos_transformado
 
@@ -72,7 +72,7 @@ b1 <- b |> ymd()
 b1
 b1 |> str()
 
-d <- "28-Mar-2022"
+d <- "28-Apr-2022"
 d |> str()
 d1 <- d |> dmy()
 d1
@@ -83,18 +83,20 @@ d1 |> week()
 d1 |> day()
 d1 |> yday()  
 d1 |> wday()  
+d1 |> wday(week_start = 1)
 
 datos_transformacion |> 
-  mutate('NOMBRE COMPLETO' = paste(NOMBRE,APELLIDO1,APELLIDO2)) |> 
-  mutate(FNAC = FNAC |> dmy()) |> 
-  mutate(EDAD = ((today()-FNAC)/365) |> floor() |> as.numeric()) -> datos_transformado
+  mutate('NOMBRE COMPLETO' = paste(NOMBRE,APELLIDO1,APELLIDO2),
+         FNAC = FNAC |> dmy(),
+         EDAD = ((today()-FNAC)/365) |> floor() |> as.numeric()) -> datos_transformado
 
 datos_transformado$NOTA |> hist()
 datos_transformado$NOTA |> shapiro.test()
 datos_transformado$NOTA |> powerTransform() -> trans_bc
 trans_bc$lambda
 bcPower(datos_transformado$NOTA,trans_bc$lambda) |> hist()
-bcPower(datos_transformado$NOTA,trans_bc$lambda) |> shapiro.test()
+datos_transformado$NOTA |> bcPower(trans_bc$lambda) |> hist()
+datos_transformado$NOTA |> bcPower(trans_bc$lambda) |> shapiro.test()
 datos_transformado |> 
   mutate(NOTA1 = bcPower(NOTA,trans_bc$lambda)) -> datos_transformado
 
@@ -117,7 +119,7 @@ datos_transformacion |>
                           labels = c("Niño","Adolescente","Joven","Adulto","Adulto mayor"))) |> 
   dummy_cols(select_columns = "ZONA") |> 
   select(-ZONA_CALLAO) |> 
-  mutate_at(vars(starts_with("ZONA")), as.factor) -> datos_transformado
+  mutate_at(vars(starts_with("ZONA")), as.factor) -> datos_transformado # tidyselect
 
 write.csv(datos_transformado, '02 - transformado.csv', row.names = FALSE)
 
