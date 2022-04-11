@@ -139,13 +139,14 @@ datos_transformado |> transmute_at(c("NOMBRE","APELLIDO1"),toupper)
 
 datos_transformado -> datos_normalizacion
 
-xmax <- function(x, na.rm = TRUE) {
-  return(x/max(x))}
+xmax <- function(x) {
+  return(x/max(x,na.rm = TRUE))}
 datos_normalizacion |> mutate(NOTA2 = NOTA |> xmax()) -> datos_normalizados1
 datos_normalizados1 |> pull(NOTA2) |> hist()
+datos_normalizados1$NOTA2
 
-minmax <- function(x, na.rm = TRUE) {
-  return((x- min(x)) /(max(x)-min(x)))}
+minmax <- function(x) {
+  return((x- min(x, na.rm = TRUE)) /(max(x, na.rm = TRUE)-min(x, na.rm = TRUE)))}
 datos_normalizacion |> mutate(NOTA2 = NOTA |> minmax()) -> datos_normalizados2
 datos_normalizados2 |> pull(NOTA2) |> hist()
 
@@ -154,7 +155,7 @@ minmaxab <- function(x, a, b, na.rm = TRUE) {
 datos_normalizacion |> mutate(NOTA2 = NOTA |> minmaxab(0,10)) -> datos_normalizados3
 datos_normalizados3 |> pull(NOTA2) |> hist()
 
-datos_normalizacion |> mutate(NOTA2 = NOTA |> scale()) -> datos_normalizados4
+datos_normalizacion |> mutate(NOTA2 = NOTA |> scale()) -> datos_normalizados4 ###
 datos_normalizados4 |> pull(NOTA2) |> hist()
 
 edecimal <- function(x, j, na.rm = TRUE) {
