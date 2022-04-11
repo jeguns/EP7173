@@ -45,6 +45,10 @@ receta
 
 receta |> juice()
 
+receta |> bake(new_data = training_set)
+
+receta |> bake(new_data = testing_set)
+
 training_set |> 
   recipe(RECOM ~ .) |> 
   step_num2factor(TIPO_CLIENTE,
