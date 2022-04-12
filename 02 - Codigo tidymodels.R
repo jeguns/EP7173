@@ -10,7 +10,7 @@ library(tidymodels)
 
 # El archivo 02 - datos_tidy.xlsx contiene datos acerca de recomendaciones dadas 
 # (o no) por clientes así como características de los mismos
-# RECOM = 0 si no recomienda, 1 si recomienda
+# RECOM = 0 si no recomienda, 1 si recomienda (TARGET)
 # F_NAC = Fecha de nacimiento
 # F_INGR = Fecha de ingreso del cliente
 # TIPO_CLIENTE = Categoría que va del 1 al 3 (3 tiene más beneficios)
@@ -43,9 +43,11 @@ training_set |>
 
 receta
 
-receta |> juice()
+receta |> juice() 
 
 receta |> bake(new_data = training_set)
+
+identical(receta |> juice(), receta |> bake(new_data = training_set))
 
 receta |> bake(new_data = testing_set)
 
@@ -61,7 +63,8 @@ training_set |>
   recipe(RECOM ~ .) |> 
   step_indicate_na(all_predictors(),all_outcomes()) |> 
   prep() |> 
-  juice() 
+  juice() |> 
+  View()
 
 training_set |> 
   recipe(RECOM ~ .) |> 
@@ -70,7 +73,8 @@ training_set |>
                   levels = c("REGULAR","FRECUENTE","VIP")) |> 
   step_unknown(TIPO_CLIENTE, new_level = "NO CLASIFICADO") |>
   prep() |> 
-  juice() 
+  juice() |> 
+  View()
 
 training_set |> 
   recipe(RECOM ~ .) |> 
@@ -100,7 +104,8 @@ training_set |>
                   levels = c("REGULAR","FRECUENTE","VIP")) |> 
   step_range(all_numeric(),-all_outcomes()) |> 
   prep() |> 
-  juice() 
+  juice() |>
+  View()
 
 training_set |> 
   recipe(RECOM ~ INGRESO) |> 
@@ -137,11 +142,18 @@ training_set |>
   recipe(RECOM ~ .) |> 
   step_zv(all_predictors()) |> 
   prep() |> 
+  juice() |> 
+  View()
+
+training_set |> 
+  recipe(RECOM ~ .) |> # se indica cual es la variable respuest
+  step_naomit(all_outcomes()) |> # se retiran los NA en la vt
+  prep() |> 
   juice() 
 
 training_set |> 
-  recipe(RECOM ~ .) |> 
-  step_naomit(all_outcomes()) |> 
+  recipe(RECOM ~ .) |>  # se indica cual es la variable respuesta
+  step_naomit(all_predictors()) |> # se retiran los NA en la varia pred
   prep() |> 
   juice() 
 
