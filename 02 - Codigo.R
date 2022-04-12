@@ -222,7 +222,7 @@ data.frame(X1 = c("Lima",NA,"Callao"),
 DATOS_EJEMPLO |> str()
 
 DATOS_EJEMPLO |> 
-  filter(is.na(X1))
+  dplyr::filter(is.na(X1))
 
 DATOS_EJEMPLO |> 
   filter(X2=="")
