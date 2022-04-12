@@ -150,10 +150,11 @@ minmax <- function(x) {
 datos_normalizacion |> mutate(NOTA2 = NOTA |> minmax()) -> datos_normalizados2
 datos_normalizados2 |> pull(NOTA2) |> hist()
 
-minmaxab <- function(x, a, b, na.rm = TRUE) {
-  return(a+(x- min(x))/(max(x)-min(x))*(b-a))}
-datos_normalizacion |> mutate(NOTA2 = NOTA |> minmaxab(0,10)) -> datos_normalizados3
+minmaxab <- function(x, a, b) {
+  return(a+(x- min(x,na.rm = TRUE))/(max(x,na.rm = TRUE)-min(x,na.rm = TRUE))*(b-a))}
+datos_normalizacion |> mutate(NOTA2 = NOTA |> minmaxab(1,5)) -> datos_normalizados3
 datos_normalizados3 |> pull(NOTA2) |> hist()
+datos_transformado |> pull(NOTA) |> hist()
 
 datos_normalizacion |> mutate(NOTA2 = NOTA |> scale()) -> datos_normalizados4 ###
 datos_normalizados4 |> pull(NOTA2) |> hist()
@@ -175,21 +176,59 @@ data.frame(X1 = c("Lima",NA,"Callao"),
            X2 = c("abb","b1",""),
            X3 = c("sí","no","   ")) |> skim()
 
+datos_limpieza |> glimpse()
+
 datos_limpieza |> pull(FACULTAD) |> table()
+datos_limpieza |> group_by(FACULTAD) |> count()
 datos_limpieza |> 
   mutate(FACULTAD = ifelse(FACULTAD=="Meteorología","Ciencias",FACULTAD)) -> datos_limpio
+datos_limpio |> group_by(FACULTAD) |> count()
 
 datos_limpio |> 
-  filter(FACULTAD=="Ciencias" & EDAD %in% c(20,21)) -> datos_limpio1
+  filter(FACULTAD=="Ciencias" & EDAD %in% c(20,21,23,28)) -> datos_limpio1
 
 datos_limpio |> 
-  filter(FACULTAD=="Zootecnia" & EDAD >=18 & EDAD < 24) -> datos_limpio2
+  filter(FACULTAD=="Zootecnia" & EDAD >=18 & EDAD < 24) -> datos_limpio2 # | Alt 124
 
 datos_limpio |> 
-  filter(FNAC >= ymd("2000-01-01")) -> datos_limpio3
+  filter(FNAC >= dmy("01-01-2000"))-> datos_limpio3
+
+datos_limpio |> 
+  filter(FNAC >= dmy("01-01-2000") & FNAC <= ymd("2000-08-31"))-> datos_limpio3a
+
+datos_limpio |> 
+  filter(FNAC >= dmy("01-01-2000") | FNAC <= ymd("2000-08-31"))-> datos_limpio3b
+
+datos_limpio |>
+  filter(FNAC >= dmy("01-07-2000") &
+           FACULTAD == "Economía" & EDAD > 21) -> datos_limpio3c
+
+datos_limpio |> 
+  mutate(EDAD1 = ifelse(EDAD>22,"0","1")) -> datos_limpio3d
+
+datos_limpio |> 
+  mutate(EDAD1 = ifelse(EDAD>24,24,EDAD)) -> datos_limpio3e
 
 datos_limpio |> 
   filter(!ZONA %in% c("CENTRO","SUR") & NOTA<10) -> datos_limpio4
+
+datos_limpio |> 
+  filter(!is.na(ZONA))
+  
+data.frame(X1 = c("Lima",NA,"Callao"),
+           X2 = c("abb","b1",""),
+           X3 = c("sí","no","   ")) -> DATOS_EJEMPLO
+
+DATOS_EJEMPLO |> str()
+
+DATOS_EJEMPLO |> 
+  filter(is.na(X1))
+
+DATOS_EJEMPLO |> 
+  filter(X2=="")
+
+DATOS_EJEMPLO |> 
+  mutate(X2 = ifelse(X2=="",NA,X2))
 
 # Reducción ---------------------------------------------------------------
 
