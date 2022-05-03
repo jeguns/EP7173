@@ -13,13 +13,14 @@ library(ForImp)
 # 03 - datos1.xlsx #
 # ================ #
 
-# Conjunto de datos simulado con 4 atributos
+# Conjunto de 10 registros simuladoS con 4 atributos
 # F1: Factor con niveles A, B, C, D
 # F2: Factor con niveles P, Q, R
 # Y: Medición cuantitativa
 # X: Covariable
-# Se desea ejecutar el análisis de un diseño bajo un experimento factorial, 
-# ¿tenemos valores perdidos? ¿cuántos son? ¿en dónde se ubican?
+# Se desea ejecutar el análisis de un diseño bajo un experimento
+# factorial,¿tenemos valores perdidos? ¿cuántos son? 
+# ¿en dónde se ubican?
 
 (datos1 <- read_excel("03 - datos1.xlsx"))
 
@@ -89,7 +90,7 @@ numeros_comunes = c(common_na_numbers,98,99)
 # Explorando patrones
 datos2 |> md.pattern()
 datos2 |> md.pairs()
-datos2 |> select(Y,X) |> marginplot()
+#X11();datos2 |> select(Y,X) |> marginplot()
 datos2 |> gg_miss_upset()
 
 # ================ #
@@ -109,7 +110,7 @@ datos3 |> miss_var_summary()
 datos3 |> group_by(AREA) |> miss_var_summary()
 datos3 |> gg_miss_var()
 datos3 |> gg_miss_fct(fct=AREA)
-datos3 |> matrixplot(sortby=1)
+x11();datos3 |> matrixplot(sortby=1)
 datos3 |> matrixplot(sortby=4)
 
 # MCAR vs MAR
