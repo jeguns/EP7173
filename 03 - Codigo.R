@@ -153,7 +153,7 @@ datos3 |> drop_na(any_of(c("JP_MCAR","JP_MNAR")))
 
 datos3$JP_COM  |> mean()
 datos3$JP_MCAR |> mean()
-datos3$JP_MCAR |> mean(na.rm=T)
+datos3$JP_MCAR |> mean(na.rm=TRUE) # na.rm = remueve NA
 datos3$JP_MAR  |> mean(na.rm=T)
 datos3$JP_MNAR |> mean(na.rm=T)
 
@@ -206,15 +206,16 @@ datos5 |>
 datos5 |> 
   mutate_all( ~ ifelse(is.na(.x) & is.numeric(.x), round(mean(.x, na.rm = T)), .))
 
-library(modeest) # moda → función mfv
-
-datos5 |> mutate(x3 = as.factor(x3)) |> na.gam.replace() -> datos5_mod
+datos5 |> mutate(x3 = as.factor(x3)) |> 
+  na.gam.replace() -> datos5_mod
 datos5 |> str()
 datos5_mod |> str()
 datos5 |> md.pattern()
 datos5_mod |> md.pattern()
 datos5 |> gg_miss_upset()
 datos5_mod |> gg_miss_upset()
+
+library(modeest) # moda → función mfv ... 
 
 # Imputación individual por regresión
 
