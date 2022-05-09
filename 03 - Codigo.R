@@ -232,6 +232,7 @@ sleep |> select(Dream,Sleep,BodyWgt,BrainWgt) -> datos6
 datos6 |> head()
 
 datos6 %>% regressionImp(Dream ~ Sleep, data = .) -> datos6a # sí %>%, no |> 
+regressionImp(Dream ~ Sleep, data = datos6) -> datos6a  
 datos6a |> filter(Dream_imp==TRUE) |> arrange(Sleep) |> head()
 datos6 |> filter(is.na(Dream)) |> arrange(Sleep) |> head()
 
@@ -252,11 +253,15 @@ datos6d |> n_missing()
 dnorm(5.4,5,1)
 dnorm(5.4,6,1)
 
+dnorm(0.2,5,1)*dnorm(3.8,5,1)*dnorm(4,5,1)*dnorm(5.4,5,1)*dnorm(6,5,1)
+dnorm(0.2,6,1)*dnorm(3.8,6,1)*dnorm(4,6,1)*dnorm(5.4,6,1)*dnorm(6,6,1)
+
 dnorm(5.4,5,1,log=T)
 dnorm(5.4,6,1,log=T)
 
 dnorm(5.4,5,1,log=T)+dnorm(0.2,5,1,log=T)+dnorm(4,5,1,log=T)+dnorm(3.8,5,1,log=T)+dnorm(6.3,5,1,log=T)
 dnorm(5.4,6,1,log=T)+dnorm(0.2,6,1,log=T)+dnorm(4,6,1,log=T)+dnorm(3.8,6,1,log=T)+dnorm(6.3,6,1,log=T)
+dnorm(5.4,4.7,1,log=T)+dnorm(0.2,4.7,1,log=T)+dnorm(4,4.7,1,log=T)+dnorm(3.8,4.7,1,log=T)+dnorm(6.3,4.7,1,log=T)
 
 # Usando el paquete norm2
 p_load(norm2)
@@ -335,6 +340,7 @@ datos6 |> pct_miss_var()
 datos6 |> pct_miss_case()
 datos6 |> skim()
 datos6 |> gg_miss_upset()
+x11();datos6 |> md.pattern()
 
 p_load(matrixStats)
 datos6 |> VIM::kNN(methodStand = "range") -> datos6_imp1
@@ -360,11 +366,13 @@ datos6_imp3$centroids
 
 datos6 |> scale() |> data.frame() |> ClustImpute(nr_cluster = 3) -> datos6_imp4
 datos6_imp4
-datos6_imp4$complete_data
+datos6_imp4$complete_data # ok, imputó pero en la escala transformada
 datos6_imp4$clusters
 datos6_imp4$centroids
 attr(datos6 |> scale(),"scaled:center") -> center
 attr(datos6 |> scale(),"scaled:scale") -> scale
 t(t(datos6_imp4$complete_data) * scale + center) -> datos6_imputados
+datos6_imp4$complete_data |> head()
 datos6_imputados |> head()
 datos6 |> head()
+

@@ -72,8 +72,8 @@ filtro9$cleanData |> str()
 # 04 - datos1.data #
 # ================ #
 
-# Conjunto de datos de 336 filasy 9 columnas referidas a sitios de localización de porteínas
-# Más información en https://archive.ics.uci.edu/ml/datasets/Ecoli
+# Conjunto de datos de 336 filasy 9 columnas referidas a sitios de localización 
+# de porteínas. Más información en https://archive.ics.uci.edu/ml/datasets/Ecoli
 
 read.table('04 - datos1.data') -> datos 
 
@@ -132,3 +132,131 @@ datos |> select(alm1,alm2) |> bagplot(pch=16,cex=2,show.outlier=TRUE)
 
 datos |> ggbetweenstats(x = type, y = aac, outlier.tagging = TRUE) 
 
+# Filtros -----------------------------------------------------------------
+
+zscore = function(x, thres = 3, na.rm = TRUE) {
+  abs(x - mean(x, na.rm = na.rm))/sd(x, na.rm = na.rm) <= thres}    
+datos |> select(aac) |> pull() |> zscore()
+datos |> select_if(is.numeric) |> map(.f=zscore) -> res_zscore
+which(res_zscore$aac==FALSE)
+which(res_zscore$gvh==FALSE)
+which(res_zscore$alm2==FALSE)
+
+hampel = function(x, thres = 3, na.rm = TRUE) {
+  abs(x - median(x, na.rm = na.rm))/stats::mad(x, na.rm = na.rm) <= thres}
+datos |> select_if(is.numeric) |> map(.f=hampel) -> res_hampel
+which(res_hampel$aac==FALSE)
+which(res_hampel$gvh==FALSE)
+which(res_hampel$alm2==FALSE)
+
+tukey = function(x, k = 1.5, na.rm = TRUE) {
+  cuan = quantile(x, probs = c(0.25, 0.75), na.rm = na.rm)
+  iqr  = diff(cuan)
+  (x >= cuan[1] - k * iqr) & (x <= cuan[2] + k * iqr)}
+datos |> select_if(is.numeric) |> map(.f=tukey) -> res_tukey
+which(res_tukey$aac==FALSE)
+which(res_tukey$gvh==FALSE)
+which(res_tukey$alm2==FALSE)
+
+# Prueba de Grubbs --------------------------------------------------------
+
+p_load(outliers)
+#install.packages("outliers")
+datos |> select(aac) |> pull() |> grubbs.test(opposite = FALSE) # min
+datos |> select(aac) |> pull() |> grubbs.test(opposite = TRUE)
+min(datos$aac);median(datos$aac);max(datos$aac)
+datos |> select(gvh) |> pull() |> grubbs.test(opposite = FALSE)
+datos |> select(gvh) |> pull() |> grubbs.test(opposite = TRUE)
+min(datos$gvh);median(datos$gvh);max(datos$gvh)
+datos |> select_if(is.numeric) |> apply(2,grubbs.test,opposite = FALSE) -> res_grubbs1
+datos |> select_if(is.numeric) |> apply(2,grubbs.test,opposite = TRUE) -> res_grubbs2
+res_grubbs1$aac;res_grubbs2$aac
+res_grubbs1$gvh;res_grubbs2$gvh
+res_grubbs1$alm2;res_grubbs2$alm2
+
+# Prueba de Dixon ---------------------------------------------------------
+
+datos |> select(mcg)  |> pull() |> dixon.test()
+set.seed(2222)
+datos |> sample_n(25) -> datos_parte
+datos_parte |> select(aac) |> pull() |> dixon.test(opposite = FALSE)
+datos_parte |> select(aac) |> pull() |> dixon.test(opposite = TRUE)
+min(datos_parte$aac);median(datos_parte$aac);max(datos_parte$aac)
+datos_parte |> select_if(is.numeric) |> map(.f=dixon.test, opposite=FALSE)
+datos_parte |> select_if(is.numeric) |> map(.f=dixon.test, opposite=TRUE)
+
+# Prueba de Rosner --------------------------------------------------------
+
+p_load(EnvStats)
+
+boxplot.stats(datos$aac)$out |> length() -> n_outliers
+datos |> select(aac) |> pull() |> rosnerTest(n_outliers) -> prueba
+prueba
+prueba$all.stats |> filter(Outlier==TRUE)
+
+boxplot.stats(datos$gvh)$out |> length() -> n_outliers
+datos |> select(gvh) |> pull() |> rosnerTest(n_outliers) -> prueba
+prueba$all.stats |> filter(Outlier==TRUE)
+
+length(boxplot.stats(datos$alm2)$out) -> n_outliers
+datos |> select(alm2) |> pull() |> rosnerTest(n_outliers) -> prueba
+
+# Distancia de Mahalanobis ------------------------------------------------
+
+p_load(mvoutlier)
+
+set.seed(222)
+data.frame(x=rnorm(50),y=rnorm(50))-> datos_random
+datos_random |> aq.plot() -> reporte
+reporte$outliers
+
+set.seed(222)
+data.frame(x=rnorm(50),y=rnorm(50),z=rnorm(50)) -> datos_random
+datos_random |> aq.plot() -> reporte
+reporte$outliers
+which(reporte$outliers)
+datos_random[reporte$outliers,]
+
+datos |> select_if(is.numeric) |> data.frame() |> aq.plot() -> reporte
+reporte$outliers
+which(reporte$outliers==TRUE)
+
+p_load(tidymodels)
+datos |> 
+  recipe(.~.) |> 
+  step_BoxCox(all_numeric()) |> 
+  prep() |> 
+  juice()  -> datos_boxcox
+datos_boxcox |> select_if(is.numeric) |> aq.plot() -> reporte_boxcox
+which(reporte_boxcox$outliers==TRUE)
+
+# Winsoring ---------------------------------------------------------------
+
+p_load(DescTools)
+
+datos |> pull(aac) |> hist()
+datos |> pull(aac) |> Winsorize() |> hist()
+
+datos |> pull(aac) |> fivenum()
+datos |> pull(aac) |> Winsorize() |> fivenum()
+
+datos |> mutate(aac2 = Winsorize(aac)) 
+
+datos |> transmute(aac2 = Winsorize(aac)) 
+
+datos |> select_if(is.numeric) |> transmute_all(~Winsorize(.))
+
+datos |> select_if(is.numeric) |> transmute_all(~Winsorize(.)) |> multi.hist(global=FALSE, bcol = "gold", dcol = "darkblue")
+
+datos |> select_if(is.numeric) |> multi.hist(global=FALSE, bcol = "gold", dcol = "darkblue")
+
+# Detección de duplicados -------------------------------------------------
+
+x = c(1,1,1,1,2,2,2,3,3,3,3,7,4,5,6)
+y = c(1,1,2,2,3,4,5,6,7,7,7,7,7,8,8)
+d = data.frame(x,y)
+d
+d |> distinct()
+d |> distinct(x)
+d |> distinct(x,.keep_all = TRUE)
+d |> unique()
