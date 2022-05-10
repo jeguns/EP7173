@@ -167,25 +167,26 @@ which(tukey(datos$aac))
 p_load(outliers)
 #install.packages("outliers")
 datos |> select(aac) |> pull() |> grubbs.test(opposite = FALSE) # min
-datos |> select(aac) |> pull() |> grubbs.test(opposite = TRUE)
-min(datos$aac);median(datos$aac);max(datos$aac)
+datos |> select(aac) |> pull() |> grubbs.test(opposite = TRUE) # max
+fivenum(datos$aac)
 datos |> select(gvh) |> pull() |> grubbs.test(opposite = FALSE)
 datos |> select(gvh) |> pull() |> grubbs.test(opposite = TRUE)
-min(datos$gvh);median(datos$gvh);max(datos$gvh)
+fivenum(datos$gvh)
 datos |> select_if(is.numeric) |> apply(2,grubbs.test,opposite = FALSE) -> res_grubbs1
 datos |> select_if(is.numeric) |> apply(2,grubbs.test,opposite = TRUE) -> res_grubbs2
 res_grubbs1$aac;res_grubbs2$aac
 res_grubbs1$gvh;res_grubbs2$gvh
 res_grubbs1$alm2;res_grubbs2$alm2
+res_grubbs1$alm1;res_grubbs2$alm1
 
 # Prueba de Dixon ---------------------------------------------------------
 
 datos |> select(mcg)  |> pull() |> dixon.test()
 set.seed(2222)
 datos |> sample_n(25) -> datos_parte
-datos_parte |> select(aac) |> pull() |> dixon.test(opposite = FALSE)
-datos_parte |> select(aac) |> pull() |> dixon.test(opposite = TRUE)
-min(datos_parte$aac);median(datos_parte$aac);max(datos_parte$aac)
+datos_parte |> pull(aac) |> dixon.test(opposite = FALSE)
+datos_parte |> pull(aac) |> dixon.test(opposite = TRUE)
+fivenum(datos_parte$aac)
 datos_parte |> select_if(is.numeric) |> map(.f=dixon.test, opposite=FALSE)
 datos_parte |> select_if(is.numeric) |> map(.f=dixon.test, opposite=TRUE)
 
@@ -194,12 +195,12 @@ datos_parte |> select_if(is.numeric) |> map(.f=dixon.test, opposite=TRUE)
 p_load(EnvStats)
 
 boxplot.stats(datos$aac)$out |> length() -> n_outliers
-datos |> select(aac) |> pull() |> rosnerTest(n_outliers) -> prueba
+datos |> pull(aac) |> rosnerTest(n_outliers) -> prueba
 prueba
 prueba$all.stats |> filter(Outlier==TRUE)
 
 boxplot.stats(datos$gvh)$out |> length() -> n_outliers
-datos |> select(gvh) |> pull() |> rosnerTest(n_outliers) -> prueba
+datos |> pull(gvh) |> rosnerTest(n_outliers) -> prueba
 prueba$all.stats |> filter(Outlier==TRUE)
 
 length(boxplot.stats(datos$alm2)$out) -> n_outliers
@@ -227,12 +228,32 @@ which(reporte$outliers==TRUE)
 
 p_load(tidymodels)
 datos |> 
+  mutate(mcg = mcg+0.01,
+         alm2 = alm2+0.01,
+         aac = aac+0.01) |> 
   recipe(.~.) |> 
   step_BoxCox(all_numeric()) |> 
   prep() |> 
   juice()  -> datos_boxcox
-datos_boxcox |> select_if(is.numeric) |> aq.plot() -> reporte_boxcox
+
+datos_boxcox |> select_if(is.numeric) |> multi.hist() 
+datos_boxcox |> select_if(is.numeric) |> aq.plot(alpha=0.1) -> reporte_boxcox
 which(reporte_boxcox$outliers==TRUE)
+
+datos |> select(mcg,gvh) |> aq.plot() -> reporte
+which(reporte$outliers==TRUE)
+
+datos |> select(aac,alm2) |> aq.plot() -> reporte
+which(reporte$outliers==TRUE)
+
+library(MVN)
+outliers <- mvn(data = datos|> select_if(is.numeric),
+                multivariateOutlierMethod = "quan")
+
+library(mvnormtest)
+mshapiro.test(t(datos|> select_if(is.numeric)))
+mshapiro.test(t(datos|> select(aac,alm2)))
+mshapiro.test(t(datos_boxcox|> select_if(is.numeric)))
 
 # Winsorizing -------------------------------------------------------------
 
