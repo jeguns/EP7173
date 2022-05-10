@@ -29,15 +29,15 @@ iris |> CVCF(classColumn=5) -> filtro4
 filtro4$remIdx
 iris[filtro4$remIdx,]
 
-iris |> dynamicCF(classColumn=5, consensus = TRUE) -> filtro5a
+iris |> dynamicCF(classColumn=5, consensus = TRUE) -> filtro5a # consenso
 filtro5a$remIdx
 iris[filtro5a$remIdx,]
 
-iris |> dynamicCF(classColumn=5, consensus = FALSE) -> filtro5b
+iris |> dynamicCF(classColumn=5, consensus = FALSE) -> filtro5b # mayoría
 filtro5b$remIdx
 iris[filtro5b$remIdx,]
 
-iris |> dynamicCF(classColumn=5, consensus = FALSE, m = 7) -> filtro5c
+iris |> dynamicCF(classColumn=5, consensus = FALSE, m = 9) -> filtro5c
 filtro5c$remIdx
 filtro5c$extraInf
 iris[filtro5c$remIdx,]
@@ -72,8 +72,8 @@ filtro9$cleanData |> str()
 # 04 - datos1.data #
 # ================ #
 
-# Conjunto de datos de 336 filasy 9 columnas referidas a sitios de localización 
-# de porteínas. Más información en https://archive.ics.uci.edu/ml/datasets/Ecoli
+# Conjunto de datos de 336 filas y 9 columnas referidas a sitios de localización 
+# de proteínas. Más información en https://archive.ics.uci.edu/ml/datasets/Ecoli
 
 read.table('04 - datos1.data') -> datos 
 
@@ -105,15 +105,16 @@ datos |> select_if(is.numeric) |> multi.hist(global=FALSE,
 
 datos$aac |> fivenum()
 datos |> select(aac) |> pull() |> fivenum()
-datos |> select_if(is.numeric) |> apply(2,fivenum)
+datos |> select_if(is.numeric) |> apply(2,fivenum) 
 datos |> select_if(is.numeric) |> map(fivenum)
 
 datos |> select(aac) |> boxplot()
 datos |> ggplot(aes(y=aac))+
-  geom_boxplot(fill = "gold",outlier.colour = "darkblue", outlier.shape = 8, outlier.size = 1.5)+
+  geom_boxplot(fill = "gold",outlier.colour = "darkblue", outlier.shape = 8, 
+               outlier.size = 0.5)+
   xlim(-1,1) + theme_minimal()
-datos |> select(-type) |> 
-  pivot_longer(cols = colnames(datos)[-c(1,7)],
+datos |> select(-type,-Sequence) %>%
+  pivot_longer(cols = colnames(.),
                names_to = "variable",
                values_to = "value") |> 
   ggplot(aes(x = variable, y = value)) +  
@@ -126,6 +127,8 @@ datos |> select_if(is.numeric) |> map(.f=boxB) -> resultados_box
 resultados_box$aac$outliers
 resultados_box$gvh$outliers
 resultados_box$alm2$outliers
+resultados_box$mcg$outliers
+resultados_box$alm1$outliers
 
 datos |> select(aac,gvh) |> bagplot(pch=16,cex=2,show.outlier=TRUE)
 datos |> select(alm1,alm2) |> bagplot(pch=16,cex=2,show.outlier=TRUE)
@@ -135,28 +138,29 @@ datos |> ggbetweenstats(x = type, y = aac, outlier.tagging = TRUE)
 # Filtros -----------------------------------------------------------------
 
 zscore = function(x, thres = 3, na.rm = TRUE) {
-  abs(x - mean(x, na.rm = na.rm))/sd(x, na.rm = na.rm) <= thres}    
+  abs(x - mean(x, na.rm = na.rm))/sd(x, na.rm = na.rm) > thres}    
 datos |> select(aac) |> pull() |> zscore()
 datos |> select_if(is.numeric) |> map(.f=zscore) -> res_zscore
-which(res_zscore$aac==FALSE)
-which(res_zscore$gvh==FALSE)
-which(res_zscore$alm2==FALSE)
+which(res_zscore$aac==TRUE)
+which(res_zscore$gvh==TRUE)
+which(res_zscore$alm2==TRUE)
 
 hampel = function(x, thres = 3, na.rm = TRUE) {
-  abs(x - median(x, na.rm = na.rm))/stats::mad(x, na.rm = na.rm) <= thres}
+  abs(x - median(x, na.rm = na.rm))/stats::mad(x, na.rm = na.rm) > thres}
 datos |> select_if(is.numeric) |> map(.f=hampel) -> res_hampel
-which(res_hampel$aac==FALSE)
-which(res_hampel$gvh==FALSE)
-which(res_hampel$alm2==FALSE)
+which(res_hampel$aac==TRUE)
+which(res_hampel$gvh==TRUE)
+which(res_hampel$alm2==TRUE)
 
 tukey = function(x, k = 1.5, na.rm = TRUE) {
-  cuan = quantile(x, probs = c(0.25, 0.75), na.rm = na.rm)
+  cuan = quantile(x, probs = c(0.25, 0.50, 0.75), na.rm = na.rm)
   iqr  = diff(cuan)
-  (x >= cuan[1] - k * iqr) & (x <= cuan[2] + k * iqr)}
+  (x < cuan[1] - k * iqr) | (x > cuan[3] + k * iqr)}
 datos |> select_if(is.numeric) |> map(.f=tukey) -> res_tukey
-which(res_tukey$aac==FALSE)
-which(res_tukey$gvh==FALSE)
-which(res_tukey$alm2==FALSE)
+which(res_tukey$aac==TRUE)
+which(res_tukey$gvh==TRUE)
+which(res_tukey$alm2==TRUE)
+which(tukey(datos$aac))
 
 # Prueba de Grubbs --------------------------------------------------------
 
@@ -230,7 +234,7 @@ datos |>
 datos_boxcox |> select_if(is.numeric) |> aq.plot() -> reporte_boxcox
 which(reporte_boxcox$outliers==TRUE)
 
-# Winsoring ---------------------------------------------------------------
+# Winsorizing -------------------------------------------------------------
 
 p_load(DescTools)
 
