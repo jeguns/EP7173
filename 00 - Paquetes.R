@@ -1,7 +1,11 @@
 install.packages("pacman")
 library(pacman)
-p_load(caret, lubridate, car, fastDummies, GGally)
 p_load(
+  caret,
+  lubridate,
+  car,
+  fastDummies,
+  GGally,
   readr,
   readxl,
   writexl,
@@ -17,17 +21,24 @@ p_load(
   tidymodels,
   norm,
   cat,
-  purrr
+  purrr,
+  norm2,
+  forecast,
+  mix,
+  matrixStats,
+  ClustImpute,
+  dplyr,
+  psych,
+  ggplot2,
+  univOutl,
+  purrr,
+  aplpack,
+  tidyr,
+  ggstatsplot,
+  outliers,
+  EnvStats,
+  mvoutlier,
+  DescTools
 )
-p_load(norm2, forecast, mix, matrixStats, ClustImpute)
-p_load(dplyr,
-       psych,
-       ggplot2,
-       univOutl,
-       purrr,
-       aplpack,
-       tidyr,
-       ggstatsplot)
-p_load(outliers, EnvStats, mvoutlier, DescTools)
 install.packages("ForImp")
 library(ForImp)
