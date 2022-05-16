@@ -19,14 +19,15 @@ p_load(
   cat,
   purrr
 )
-p_load(norm2, forecast, mix, matrixStats, ClustImpute)p_load(dplyr,
-                                                             psych,
-                                                             ggplot2,
-                                                             univOutl,
-                                                             purrr,
-                                                             aplpack,
-                                                             tidyr,
-                                                             ggstatsplot)
+p_load(norm2, forecast, mix, matrixStats, ClustImpute)
+p_load(dplyr,
+       psych,
+       ggplot2,
+       univOutl,
+       purrr,
+       aplpack,
+       tidyr,
+       ggstatsplot)
 p_load(outliers, EnvStats, mvoutlier, DescTools)
 install.packages("ForImp")
 library(ForImp)
