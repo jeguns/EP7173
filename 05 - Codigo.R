@@ -194,7 +194,7 @@ data.frame(x1 = rnorm(500),
            x4 = rnorm(500),
            x5 = rnorm(500),
            x6 = rnorm(500)) -> datos_sim
-datos_sim |> fa(nfactors = 6, rotate = "none") -> AF_SIM
+datos_sim |> fa(nfactors = 6, rotate = "varimax") -> AF_SIM
 AF_SIM |> fa.diagram()
 AF_SIM$loadings|> print(cutoff = 0)
 datos_sim |> KMO()
@@ -264,13 +264,13 @@ datos |> scale() |> dist() |> cmdscale(k=3) |>
 # 05 - datos4.csv #
 # =============== #
 
-# Se recolectaron datos sobre la abundancia de 7 especies de crustáceros 
+# Se recolectaron datos sobre la abundancia de 7 especies de crustáceos 
 # herbívoros del puerto de Sydney, en 5 distintos hábitats y en dos momentos 
 # diarios (día / noche)
 
 read.csv('05 - datos4.csv') -> datos4
 datos4 |> select(-Habitat,-DayNight,-Replicate,-Mass) -> datos_4
-metaMDS(comm = datos_4, distance = "bray", k=2, trace = FALSE, trymax = 30) -> emd4
+metaMDS(comm = datos_4, distance = "bray", k=2, trace = FALSE, trymax = 90) -> emd4
 emd4$points 
 data.frame(emd4$points, Habitat = datos4$Habitat, DiaNoche = datos4$DayNight) |> 
   ggplot(aes(x=MDS1,y=MDS2,color=Habitat))+
@@ -287,12 +287,12 @@ emd4$stress
 
 # Local Linear Embedding --------------------------------------------------
 
-# if (!requireNamespace("BiocManager", quietly = TRUE))
-#   install.packages("BiocManager")
-# 
-# BiocManager::install("RDRToolbox")
-
-# install.packages("lle")
+ # if (!requireNamespace("BiocManager", quietly = TRUE))
+ #   install.packages("BiocManager")
+ # 
+ # BiocManager::install("RDRToolbox")
+ # 
+ #  install.packages("lle")
 
 library(RDRToolbox)
 library(lle)
