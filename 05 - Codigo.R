@@ -61,11 +61,11 @@ datos |>
 
 datos |> cor()
 
-datos |> KMO()
 datos |> cor() |> det()
 datos |> select(V3,V7) |> cor() |> det()
 datos |> select(V3,V5) |> cor() |> det()
-datos |> bart_spher()
+datos |> KMO()
+datos |> bart_spher() # REdaS archivado, usar ↓↓↓↓
 datos |> cortest.bartlett()
 datos |> cor() |> cortest.bartlett(n=569)
 
@@ -97,10 +97,15 @@ ComPri2$center
 ComPri2$scale
 (ComPri2$sdev**2) |> sum()
 ComPri2$rotation # cargas (coeficientes)
+ComPri2$rotation[,c(1,3)]
 ComPri2$x # valores que se toman en los ejes (Scores)
+ComPri2$x[,1]
 ComPri2$x |> dim()
 datos |> dim()
-ComPri2 |> screeplot(type = "l", npcs = 15, main = "15 primeros componentes principales")
+
+ComPri2 |> 
+  screeplot(type = "l", npcs = 15, 
+            main = "15 primeros componentes principales")
 abline(h = 1, lty = 2, col = "darkblue")
 
 p_load(factoextra)
@@ -132,13 +137,13 @@ ComPri2 |> fviz_pca_biplot(repel = TRUE, axes = c(29,30))+
 ComPri2$x |> cor() |> corrplot()
 
 datos |> scale() |> as.matrix() |> dim()
-ComPri2$rotation[,1:3] |> dim()
+ComPri2$rotation[,1:6] |> dim()
 
-datos |> scale() |> as.matrix() -> X
-ComPri2$rotation[,1:3] -> cargas
+datos |> scale() |> as.matrix() -> X # datos originales
+ComPri2$rotation[,1:6] -> cargas # cargas de los 3 primeros comp
 X %*% cargas -> Xcargas
-Xcargas[1:4,]
-ComPri2$x[1:4,1:3]
+Xcargas[1:4,] # scores de los 3 primeros componentes
+ComPri2$x[1:4,1:6] # scores de los 3 primeros componentes
 
 # Otros paquetes / funciones para componentes principales
 # stats:: princomp
