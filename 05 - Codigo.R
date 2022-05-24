@@ -158,7 +158,7 @@ datos |> fa(nfactors = datos |> ncol(), rotate = "none") -> AF1
 AF1 |> fa.diagram()
 AF1
 
-datos |> fa(nfactors = 3, rotate = "none") -> AF2
+datos |> fa(nfactors = 3, rotate = "varimax") -> AF2
 AF2 |> fa.diagram()
 AF2
 
@@ -182,9 +182,22 @@ AF1$e.values
 AF1$e.values |> plot(type = "b", pch = 18)
 AF1$e.values |> sum()
 
+datos |> dim()
 AF2$scores |> dim()
 AF2$scores |> cor()
 AF2$scores |> cor() |> corrplot()
+
+
+data.frame(x1 = rnorm(500),
+           x2 = rnorm(500),
+           x3 = rnorm(500),
+           x4 = rnorm(500),
+           x5 = rnorm(500),
+           x6 = rnorm(500)) -> datos_sim
+datos_sim |> fa(nfactors = 6, rotate = "none") -> AF_SIM
+AF_SIM |> fa.diagram()
+AF_SIM$loadings|> print(cutoff = 0)
+datos_sim |> KMO()
 
 # Escalamiento multidimensional -------------------------------------------
 
