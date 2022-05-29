@@ -308,10 +308,10 @@ p_load(rgl, vegan)
 d = generateData(samples=20, genes=1000); d[[1]] -> datos5
 datos5 |> dim()
 (datos5 |> LLE(dim=2, k=5) -> datos5_lle)
+datos5_lle |> dim()
 datos5_lle |> colMeans()
 datos5_lle[,1] |> var();datos5_lle[,2] |> var()
 datos5_lle |> plot(pch = 18);abline(h=0);abline(v=0)
-datos5_lle |> dim()
 
 # ====== #
 # datos6 #
@@ -341,10 +341,17 @@ plot(datos6_lle1$Y, main="K=5 data", xlab="Dim 1", ylab="Dim 2")
 data(BCI) 
 BCI -> datos7
 datos7 |> dim()
-datos7 |> vegdist() -> dist
-dist |> isomap(k = 5, ndim = 4) -> datos7_isomap
-datos7_isomap
+
+datos7 |> as.matrix() |>
+  Isomap(dims = 1:10,
+         k = 10,
+         plotResiduals = TRUE)
+
+datos7 |> vegdist() |> isomap(k = 5, ndim = 4) -> datos7_isomap
 (datos7_isomap$points -> puntos_isomap)
-puntos_isomap |> head() 
+puntos_isomap[1:4,]
 datos7_isomap |> plot(main="isomap k=4")
 puntos_isomap |> plot()
+
+
+# Más información: https://www.bioconductor.org/packages/devel/bioc/vignettes/RDRToolbox/inst/doc/vignette.pdf
