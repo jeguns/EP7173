@@ -343,12 +343,13 @@ BCI -> datos7
 datos7 |> dim()
 
 datos7 |> as.matrix() |>
-  Isomap(dims = 1:10,
+  Isomap(dims = 1:20,
          k = 10,
-         plotResiduals = TRUE)
+         plotResiduals = TRUE) # observar el número de dimensiones
 
-datos7 |> vegdist() |> isomap(k = 5, ndim = 4) -> datos7_isomap
+datos7 |> vegdist() |> isomap(k = 5, ndim = 4) -> datos7_isomap # obtenemos las dim
 (datos7_isomap$points -> puntos_isomap)
+puntos_isomap |> dim()
 puntos_isomap[1:4,]
 datos7_isomap |> plot(main="isomap k=4")
 puntos_isomap |> plot()
