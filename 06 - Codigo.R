@@ -1,4 +1,4 @@
-library(pacman)
+hibrilibrary(pacman)
 p_load(readxl,dplyr) # Feature Selection in R
 
 # Seleccion de variables en dplyr -----------------------------------------
@@ -43,6 +43,7 @@ datos |> dplyr::select(matches("M"))
 datos |> dplyr::select(contains("[XY]_")) # busca la expresión exacta
 datos |> dplyr::select(matches("[XY]_")) # admite expresiones regulares (patrón)
 datos |> dplyr::select(num_range("Z",range=1:4))
+datos |> dplyr::select(num_range("z",range=1:4))
 datos |> dplyr::select(everything())
 datos |> dplyr::select_all()
 datos |> dplyr::select_if(is.numeric)
@@ -89,6 +90,8 @@ data(GermanCredit)
 
 datos6_1 = GermanCredit |> 
   dplyr::select(Duration,Amount,InstallmentRatePercentage,ResidenceDuration,Age,NumberExistingCredits,Class)
+
+# lo siguiente solo se debería trabajar con el conjunto de datos de entrenamiento
 
 # Funciones para búsqueda directa
 directSearchAlgorithm(directSearcher = "selectKBest", list(k = 2)) -> Busqueda_KMejores
@@ -153,6 +156,12 @@ directFeatureSelection(datos6_1, 'Class', busqueda_percentiles, Evaluador_Cramer
 directFeatureSelection(datos6_1, 'Class', busqueda_percentiles, Evaluador_Cramer)$featuresSelected |> 
   as.simple.formula('Class')
 
+#
+selectKBest(k = 2) -> busqueda_kmejores
+cramer() -> evaluador_cramer
+directFeatureSelection(datos6_1, 'Class', busqueda_kmejores, evaluador_cramer)$bestFeatures
+#
+
 filterEvaluator(filter = 'relief') -> Evaluador_Relief
 FSinR::relief() -> evaluador_relief
 directFeatureSelection(datos6_1, 'Class', busqueda_percentiles, Evaluador_Relief)$bestFeatures
@@ -178,9 +187,9 @@ cross_plot(datos6_1,
 
 # Evaluación con filtros colectivos para otras estrategias de búsqueda
 # Medidas de información
-featureSelection(datos6_1, 'Class', Busqueda_SFS, Evaluador_Cramer) -> result0
-filterEvaluator(filter = 'giniIndex') -> Evaluador_Gini
-featureSelection(datos6_1, 'Class', Busqueda_SFS, Evaluador_Gini) -> result1
+featureSelection(datos6_1, 'Class', Busqueda_SFS, Evaluador_Cramer) -> result0 # error
+filterEvaluator(filter = 'giniIndex') -> Evaluador_Gini # defino el filtro de Gini
+featureSelection(datos6_1, 'Class', Busqueda_SFS, Evaluador_Gini) -> result1 
 featureSelection(datos6_1, 'Class', Busqueda_SFFS, Evaluador_Gini) -> result2
 featureSelection(datos6_1, 'Class', Busqueda_SBS, Evaluador_Gini) -> result3
 featureSelection(datos6_1, 'Class', Busqueda_SFBS, Evaluador_Gini) -> result4
@@ -210,7 +219,11 @@ Evaluador_Gini(datos6_1, 'Class', 'NumberExistingCredits')
 
 # En vez de Evaluador_Gini, se pueden utilizar otros criterios de filtro
 # para conjunto de variables: medidas de consistencia, de dependencia, 
-# de distancia
+# de distancia. Se puede buscar en la ayuda ?filterEvaluator
+?filterEvaluator
+filterEvaluator(filter = 'giniIndex') -> Evaluador_Gini # defino el filtro de Gini
+filterEvaluator(filter = "roughsetConsistency") -> Evaluador_RSC 
+filterEvaluator(filter = "determinationCoefficient") -> Evaluador_R2 
 
 # Evaluación con filtros colectivos
 # Medida de consistencia usando FSelector::consistency
@@ -221,11 +234,12 @@ as.simple.formula(subset, "Class")
 # Evaluación con filtros híbridos 
 filterEvaluator(filter = 'chiSquared') -> Evaluador_Chi2 # individual
 filterEvaluator(filter = 'giniIndex') -> Evaluador_Gini # conjuntos
-hybridSearchAlgorithm('LCC') -> Busqueda_Hibrida
+hybridSearchAlgorithm('LCC') -> Busqueda_Hibrida # Esto es Busqueda, no filtro
 hybridFeatureSelection(datos6_1, 'Class', Busqueda_Hibrida, Evaluador_Gini, Evaluador_Chi2) # error
 hybridFeatureSelection(datos6_1, 'Class', Busqueda_Hibrida, Evaluador_Chi2, Evaluador_Gini) # (indiv, conj)
 hybridFeatureSelection(datos6_1, 'Class', Busqueda_Hibrida, Evaluador_Chi2, Evaluador_Chi2) # error
 hybridFeatureSelection(datos6_1, 'Class', Busqueda_Hibrida, Evaluador_Gini, Evaluador_Gini) # (conj, conj)
+# el orden debe ser (data frame, variable Y. algoritmo hibrido, filtro ind o conj, filtro conj)
 
 # Evaluación con wrapper --------------------------------------------------
 
