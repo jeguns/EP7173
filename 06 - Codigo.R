@@ -1,5 +1,8 @@
-hibrilibrary(pacman)
+library(pacman)
 p_load(readxl,dplyr) # Feature Selection in R
+
+# Todos estos procedimientos deben realizarse con los
+# datos de entrenamiento
 
 # Seleccion de variables en dplyr -----------------------------------------
 
@@ -293,7 +296,7 @@ featureSelection(datos6_1, 'Class', Busqueda_SFS, Evaluador_enet) -> resultado_e
 
 # BORUTA ------------------------------------------------------------------
 
-Boruta(Class ~ ., data = datos6_1, doTrace = 0, maxRuns = 500) -> boruta
+Boruta(Class ~ ., data = datos6_1, doTrace = 0, maxRuns = 200) -> boruta
 boruta |> print()
 boruta |> plot(las = 2, cex.axis = 0.7)
 boruta |> attStats()
@@ -314,7 +317,7 @@ boruta3 |> attStats()
 boruta3 |> plotImpHistory()
 boruta3$timeTaken
 
-boruta2 |> TentativeRoughFix() -> boruta4
+boruta |> TentativeRoughFix() -> boruta4
 boruta4 |> print()
 boruta4 |> plot(las = 2, cex.axis = 0.7)
 boruta4 |> attStats()
@@ -324,8 +327,8 @@ boruta4$finalDecision
 
 # Recursive Feature Elimination -------------------------------------------
 
-rfeControl(functions = rfFuncs,
-           method    = "loocv",
+rfeControl(functions = rfFuncs, #lmFuncs, #nbFuncs
+           method    = "cv", #cv, loocv, boot
            number    = 10) -> control
 rfe(x = datos6_1[, 1:6],
     y = datos6_1$Class,
