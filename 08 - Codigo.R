@@ -1,6 +1,7 @@
 
 library(pacman)
-p_load(readr,dplyr,tidyr,lubridate,ggplot2,funModeling,discretization,arules,arulesCBA,GridOnClusters)
+
+p_load(dplyr,readr,tidyr,lubridate,ggplot2,funModeling,discretization,arules,arulesCBA,GridOnClusters)
 
 # Discretización personalizada --------------------------------------------
 
