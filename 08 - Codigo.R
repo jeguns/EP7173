@@ -17,7 +17,7 @@ p_load(dplyr,readr,tidyr,lubridate,ggplot2,funModeling,discretization,arules,aru
 datos = read_csv('08 - datos1.csv')
 datos |> glimpse()
 datos |> 
-  filter(!is.na(edad) & edad>=0) |> 
+  filter(!is.na(edad) & edad>=0) |>  # en vez de esto, se podría imputar
   mutate(fecha_dosis1 = dmy(fecha_dosis1),
          fecha_dosis2 = dmy(fecha_dosis2),
          fecha_dosis3 = dmy(fecha_dosis3),
@@ -25,10 +25,13 @@ datos |>
          dias_dosis2  = as.numeric(today()-fecha_dosis2),
          dias_dosis3  = as.numeric(today()-fecha_dosis3),
          flag_vacuna  = as.factor(flag_vacuna)) -> datos
-datos_ |>
+
+datos |> count(edad)
+
+datos |>
   mutate(edad2 = cut(edad,
                      breaks = c(0, 11, 17, 29, 59, 120))) |>
-  count(edad2) 
+  count(edad2)  # mal
 
 datos |>
   mutate(edad2 = cut(edad,
@@ -56,15 +59,6 @@ datos |>
                      right  = FALSE)) |>
   select(edad2) |> 
   str()
-
-datos |> 
-  mutate(edad2 = cut(edad, 
-                     breaks = c(0,12,18,30,60,120),
-                     labels=c("Niño","Adolescente","Joven","Adulto","Adulto mayor"),
-                     right  = FALSE,
-                     ordered_result = TRUE)) |> 
-  pull(edad2) |> 
-  table()
 
 datos |> 
   mutate(edad2 = cut(edad, 
@@ -142,7 +136,7 @@ datos |>
 # 08 - datos2.data #
 # ================ #
 
-rm(list=ls())
+rm(list=ls()) # borrar los objetos ya creados
 datos = read.table('08 - datos2.data', sep = ",", na.strings = "?")
 
 # V1 = Evaluación BI-RADS: 1 a 5 (ordinal)
@@ -154,12 +148,12 @@ datos = read.table('08 - datos2.data', sep = ",", na.strings = "?")
 
 datos |> glimpse()
 datos |> 
-  drop_na() |>
+  drop_na() |> # en vez de esto se podría imputar
   mutate(V1 = as.numeric(V1),
          V2 = as.numeric(V2),
          V5 = as.numeric(V5),
          V6 = as.factor(V6)) |> 
-  select(V1,V2,V5,V6) -> datos
+  select(V1,V2,V5,V6) -> datos # V3 y V4 bastaría con convertirlas en factor
 datos |> glimpse()
 
 datos |> disc.Topdown(method = 1) -> discretiza_caim # discretization
@@ -181,7 +175,7 @@ datos_caim |> count(V5)
 datos |> filter(V5>=1 & V5<2.5) |> count()
 datos |> filter(V5>=2.5 & V5<=4) |> count()
 
-datos |> discretizeDF.supervised(formula = V6~.,.,method="caim") -> datos_caim_2 # arulesCBA
+datos |> discretizeDF.supervised(formula = V6~., ., method="caim") -> datos_caim_2 # arulesCBA
 datos_caim_2 |> count(V1)
 datos_caim_2 |> count(V2)
 datos_caim_2 |> count(V5)
