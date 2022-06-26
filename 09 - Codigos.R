@@ -292,7 +292,7 @@ confusionMatrix(data      = predicciones_bal, # datos predichos
                 reference = test_bal$V5, # datos testing
                 positive  = "1") -> mat_conf_bal
 mat_conf_bal
-mat_conf_bal$table
+Lmat_conf_bal$table
 mat_conf_bal$overall
 mat_conf_bal$byClass
 data.frame(obs = test_bal$V5, pred = predicciones_bal) |> 
