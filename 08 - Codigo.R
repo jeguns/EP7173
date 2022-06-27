@@ -296,18 +296,19 @@ discretiza_chi2$Disc.data |>
   mutate_if(is.numeric,as.factor) -> datos_chi2
 discretiza_chi2$cutp -> cortes_chi2
 
-cortes_chi2[[1]]
+cortes_chi2[[1]] ## Estos resultados no son correctos (los límites del intervalos)
 datos_chi2 |> count(V1)
 datos |> filter(V1<1.5) |> count()
 datos |> filter(V1>=1.5 & V1<2.5) |> count()
 datos |> filter(V1>=2.5 & V1<3.5) |> count()
 datos |> filter(V1>=3.5 & V1<4.5) |> count()
-datos |> filter(V1>=4.5 & V1<5.5) |> count()
-datos |> filter(V1>=5.5) |> count()
-cortes_chi2[[2]]
-cortes_chi2[[3]]
+datos |> filter(V1>=4.5) |> count()
+cortes_chi2[[2]] ## Estos resultados no son correctos (los límites del intervalos)
+cortes_chi2[[3]] ## Estos resultados no son correctos (los límites del intervalos) 
 
-datos |> select(V1,V6) |> chi22() -> discretiza_chi2
+# EJECUTAR LA FUNCIÓN CHI22 DEL OTRO SCRIPT ↓↓↓↓
+
+datos |> select(V1,V6) |> chi22() -> discretiza_chi2 # V1 CON V6
 discretiza_chi2$Disc.data |> mutate_if(is.numeric,as.factor) -> datos_chi2
 discretiza_chi2$cutp -> cortes_chi2
 cortes_chi2
@@ -318,7 +319,7 @@ datos |> filter(V1>=2.5 & V1<4.5) |> count()
 datos |> filter(V1>=4.5 & V1<5.5) |> count()
 datos |> filter(V1>=5.5) |> count()
 
-datos |> select(V2,V6) |> chi22() -> discretiza_chi2
+datos |> select(V2,V6) |> chi22() -> discretiza_chi2 # V2 CON V6
 discretiza_chi2$Disc.data |> mutate_if(is.numeric,as.factor) -> datos_chi2
 discretiza_chi2$cutp -> cortes_chi2
 cortes_chi2
@@ -327,7 +328,7 @@ datos |> filter(V2<27.5) |> count()
 datos |> filter(V2>=27.5 & V2<28.5) |> count()
 datos |> filter(V2>=28.5 & V2<30.5) |> count()
 
-datos |> select(V5,V6) |> chi22() -> discretiza_chi2
+datos |> select(V5,V6) |> chi22() -> discretiza_chi2 # V5 CON V6
 discretiza_chi2$Disc.data |> mutate_if(is.numeric,as.factor) -> datos_chi2
 discretiza_chi2$cutp -> cortes_chi2
 cortes_chi2
