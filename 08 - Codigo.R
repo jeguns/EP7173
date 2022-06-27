@@ -357,6 +357,8 @@ datos |> filter(V1>=1.5) |> count()
 cortes_modchi2[[2]]
 cortes_modchi2[[3]]
 
+# EJECUTAR LA FUNCIÓN MODCHI22 DEL OTRO SCRIPT ↓↓↓↓
+
 datos |> select(V1,V6) |>  modChi22() -> discretiza_modchi2
 discretiza_modchi2$Disc.data |> mutate_if(is.numeric,as.factor) -> datos_modchi2
 discretiza_modchi2$cutp -> cortes_modchi2
@@ -400,6 +402,8 @@ datos |> filter(V1>=1.5) |> count()
 cortes_extchi2[[2]]
 cortes_extchi2[[3]]
 
+# EJECUTAR LA FUNCIÓN extendChi22 DEL OTRO SCRIPT ↓↓↓↓
+
 datos |> select(V1,V6) |>  extendChi22() -> discretiza_extchi2
 discretiza_extchi2$Disc.data |> mutate_if(is.numeric,as.factor) -> datos_extchi2
 discretiza_extchi2$cutp -> cortes_extchi2
@@ -431,6 +435,8 @@ discretiza_extchi22 |> count(V5)
 # Discretización basada en clustering -------------------------------------
 
 # Clustering univariado
+# Sugerencia: realizar un análisis de silueta para cada atributo, a fin de 
+# identificar el número de clusters (breaks)
 datos |> 
   mutate(v1 = arules::discretize(V1,method="cluster", breaks=3),
          v2 = arules::discretize(V2,method="cluster", breaks=2),
@@ -441,7 +447,7 @@ discretiza_cluster |> count(v5)
 
 # Clustering multivariado
 datos |> 
-  select_if(is.numeric) |> 
+  select_if(is.numeric) |> # estamos retirando el target Y (factor)
   discretize.jointly(k = c(2:8), min_level = 2) -> discretiza_cluster # GridOnClusters
 datos |> head()
 discretiza_cluster$D |> head()
