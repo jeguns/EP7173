@@ -51,7 +51,7 @@ datos2 |>
 
 ovun.sample(V5~., data = datos1, method = "under")$data -> datos1_under1 # ROSE
 datos1_under1 |> count(V5) |> mutate(prop=n/sum(n))
-X11();plotComparison(datos1, datos9_1_under1, names(datos1), classAttr = "V5") # imbalance
+X11();plotComparison(datos1, datos1_under1, names(datos1), classAttr = "V5") # imbalance
 
 ovun.sample(V5~., data = datos1, method = "under", N = 177*2)$data -> datos1_under2 
 datos1_under2 |> count(V5) |> mutate(prop=n/sum(n))
@@ -62,16 +62,16 @@ datos1_under3 |> count(V5) |> mutate(prop=n/sum(n))
 RandUnderClassif(V5~., dat = datos1, C.perc='balance') -> datos1_under4 # UBL
 datos1_under4 |> count(V5) |> mutate(prop=n/sum(n))
 
-RandUnderClassif(V5~., dat = datos1, C.perc='extreme') -> datos1_under5 
+RandUnderClassif(V5~., dat = datos1, C.perc='extreme') -> datos1_under5 # no es solución
 datos1_under5 |> count(V5) |> mutate(prop=n/sum(n))
 
 RandUnderClassif(V5~., dat = datos1, C.perc=list('0'=0.3,'1'=1)) -> datos1_under6
 datos1_under6 |> count(V5) |> mutate(prop=n/sum(n))
 
 # ubUnder(X        = datos1 |> select(-V5), # unbalanced
-#         Y        = datos1 |> pull(V5)) -> ub_under1 
-# data.frame(ub_under1$X,ub_under1$Y) -> datos1_under7
-# datos1_under7 |> count(ub_under1.Y) |> mutate(prop=n/sum(n))
+#         Y        = datos1 |> pull(V5)) -> ub_under7
+# data.frame(ub_under7$X,ub_under7$Y) -> datos1_under7
+# datos1_under7 |> count(ub_under7.Y) |> mutate(prop=n/sum(n))
 
 # CNN ---------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ datos1_tomek |> count(V5) |> mutate(prop=n/sum(n))
 # data.frame(tomek2$X,tomek2$Y) -> datos1_tomek2
 # datos1_tomek2 |> count(tomek2.Y) |> mutate(prop=n/sum(n))
 
-set.seed(23435)
+set.seed(687767)
 TomekClassif(Y~., data.frame(datos2), Cl = "0") -> tomek # UBL
 tomek[[1]] -> datos2_tomek
 datos2_tomek |> count(Y) |> mutate(prop=n/sum(n))
