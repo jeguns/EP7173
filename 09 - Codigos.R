@@ -170,7 +170,7 @@ set.seed(984)
 NCLClassif(Y~., data.frame(datos2), Cl = "1") -> datos2_ncl ## NCL
 datos2_ncl |> count(Y) |> mutate(prop=n/sum(n))
 
-# Oversampling ------------------------------------------------------------
+# Random Oversampling -----------------------------------------------------
 
 ovun.sample(V5~., data = datos1, method = "over")$data -> datos1_over1 # ROSE
 datos1_over1 |> count(V5) |> mutate(prop=n/sum(n))
@@ -184,7 +184,7 @@ datos1_over3 |> count(V5) |> mutate(prop=n/sum(n))
 RandOverClassif(V5~., dat = datos1, C.perc='balance') -> datos9_1_over4 # UBL
 datos9_1_over4 |> count(V5) |> mutate(prop=n/sum(n))
 
-RandOverClassif(V5~., dat = datos1, C.perc='extreme') -> datos9_1_over5
+RandOverClassif(V5~., dat = datos1, C.perc='extreme') -> datos9_1_over5 # no es solución
 datos9_1_over5 |> count(V5) |> mutate(prop=n/sum(n))
 
 RandOverClassif(V5~., dat = datos1, C.perc=list('0'=1,'1'=3)) -> datos9_1_over6
@@ -197,16 +197,13 @@ datos9_1_over6 |> count(V5) |> mutate(prop=n/sum(n))
 
 # SMOTE -------------------------------------------------------------------
 
-SmoteClassif(V5~., datos1, C.perc='balance') -> smote1 # UBL
-smote1 -> datos1_smote1
+SmoteClassif(V5~., datos1, C.perc='balance') -> datos1_smote1 # UBL # over & under
 datos1_smote1 |> count(V5) |> mutate(prop=n/sum(n))
 
-SmoteClassif(V5~., datos1, C.perc="extreme") -> smote2
-smote2 -> datos1_smote2
+SmoteClassif(V5~., datos1, C.perc="extreme") -> datos1_smote2 # no es la solución
 datos1_smote2 |> count(V5) |>  mutate(prop=n/sum(n))
 
-SmoteClassif(V5~., datos1, C.perc=list('0'=1,'1'=3)) -> smote3
-smote3 -> datos1_smote3
+SmoteClassif(V5~., datos1, C.perc=list('0'=1,'1'=3)) -> datos1_smote3 # oversampling
 datos1_smote3 |> count(V5) |> mutate(prop=n/sum(n))
 
 # ubSMOTE(X          = datos1 |> select_if(is.numeric), # unbalanced
@@ -218,10 +215,10 @@ datos1_smote3 |> count(V5) |> mutate(prop=n/sum(n))
 
 # ROSE --------------------------------------------------------------------
 
-ROSE(V5~., data = datos1)$data -> datos1_rose1 # ROSE
+ROSE(V5~., data = datos1)$data -> datos1_rose1 # ROSE # over & under
 datos1_rose1 |> count(V5) |> mutate(prop=n/sum(n))
 
-ovun.sample(V5~., data = datos1, N = 1000)$data -> datos1_rose2
+ovun.sample(V5~., data = datos1, N = 570+177)$data -> datos1_rose2
 datos1_rose2 |> count(V5) |> mutate(prop=n/sum(n))
 
 ovun.sample(V5~., data = datos1, p = 0.5)$data -> datos1_rose3
@@ -229,21 +226,25 @@ datos1_rose3 |> count(V5) |> mutate(prop=n/sum(n))
 
 # MWMOTE ------------------------------------------------------------------
 
-mwmote(datos1, numInstances = 570-177, classAttr = "V5") -> datos1_mwmote # imbalance
-datos1_mwmote |> count(V5) |> mutate(prop=n/sum(n))
-datos1_mwmote |> rbind(datos1) -> datos1_mwmote
+mwmote(datos1, numInstances = 570-177, classAttr = "V5") -> over_minor # imbalance
+over_minor |> rbind(datos1) -> datos1_mwmote
 datos1_mwmote |> count(V5) |> mutate(prop=n/sum(n))
 
 # Random Over & Under -----------------------------------------------------
 
-ovun.sample(V5~., data = datos1, method = "both")$data -> datos1_both1 # ROSE
+ovun.sample(V5~., data = datos1, method = "both")$data -> datos1_both1 # ROSE # over & under
 datos1_both1 |> count(V5) |> mutate(prop=n/sum(n))
 
 ovun.sample(V5~., data = datos1, method = "both", N = 1000)$data -> datos1_both2
 datos1_both2 |> count(V5) |> mutate(prop=n/sum(n))
 
 ovun.sample(V5~., data = datos1, method = "both", p = 0.5)$data -> datos1_both3
-datos1_both3 |> count(V5) |> mutate(prop=n/sum(n))
+datos1_both3 |> count(V5) |> mutate(prop=n/sum(n)) 
+
+data.frame(y = c(0,1,2,2,2,1,2,2,2,1,0) |> as.factor(),
+           x1 = rnorm(11),
+           x2 = rnorm(11)) -> datos_prueba
+ovun.sample(y~., data = datos_prueba, method = "both", p = 0.5)$data
 
 # Modelo ------------------------------------------------------------------
 
@@ -281,8 +282,10 @@ datos1[-ind_train_bal,] -> test_bal
 train_bal |> count(V5) |> mutate(prop=n/sum(n))
 test_bal  |> count(V5) |> mutate(prop=n/sum(n))
 
+# ↓↓↓
 SmoteClassif(V5~., train_bal, C.perc='balance') -> smote_bal # balancear los datos de entrenamiento
 smote_bal |> count(V5) |> mutate(prop=n/sum(n))
+# ↑↑↑
 
 modelo_bal = glm(V5~.,smote_bal, family = binomial(link="logit")) # construimos el modelo de entrenamiento
 modelo_bal |> 
