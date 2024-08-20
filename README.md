@@ -28,4 +28,7 @@ El horario regular del curso es lunes de 7 a 10 p.m. y viernes de 8 a 10 p.m. Si
 
   **Cronograma de clases**
   
-  [Consultar aquí](https://docs.google.com/spreadsheets/d/1KNEa6mMAZ_qdtxGllau5Q_gZzD59nr1bzXbS5zuo_1Y/edit?usp=sharing){:target="_blank"}
+  [Consultar aquí](https://docs.google.com/spreadsheets/d/1KNEa6mMAZ_qdtxGllau5Q_gZzD59nr1bzXbS5zuo_1Y/edit?usp=sharing)
+
+  <a href="[https://www.ejemplo.com](https://docs.google.com/spreadsheets/d/1KNEa6mMAZ_qdtxGllau5Q_gZzD59nr1bzXbS5zuo_1Y/edit?usp=sharing)" target="_blank">Texto del enlace</a>
+
