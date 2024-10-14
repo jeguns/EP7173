@@ -1,0 +1,481 @@
+---
+title: "Selección de atributos"
+output: 
+  flexdashboard::flex_dashboard:
+    theme: cosmo
+    orientation: columns
+    vertical_layout: scroll
+---
+
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+Preliminares
+=======================
+
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+### Carga de paquetes
+
+```{r, echo = TRUE}
+library(pacman)
+p_load(readxl,dplyr,vctrs,caret,FSinR,FSelector,arm, rpart, MASS, kernlab, elasticnet, mlbench, Boruta)
+```
+
+Column {data-width=700}
+-----------------------------------------------------------------------
+
+### Limpieza previa
+
+**Archivo: 06 - datos1.xlsx**
+
+Es un conjunto de datos sintético que contiene 31 registros y 11 variables
+
+X_A: atributo numérico positivo
+
+X_B: atributo numérico positivo
+
+X_C: atributo numérico positivo
+
+Y_A: atributo cualitativo que toma los valores SI y NO	
+
+Y_B: atributo cualitativo que toma los valores SI y NO
+
+Y_C: atributo cualitativo que toma los valores SI y NO	
+
+z1: proporción (valores entre 0 y 1)
+
+Z2: proporción (valores entre 0 y 1)	
+
+z3: proporción (valores entre 0 y 1)	
+
+Z4: proporción (valores entre 0 y 1)	
+
+Z5: proporción (valores entre 0 y 1)
+
+```{r, echo = TRUE}
+datos <- read_xlsx('06 - datos1.xlsx') 
+datos |> colnames() 
+```
+
+Criterio fijado por el investigador
+=======================
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+#### Función select
+
+```{r echo=TRUE}
+datos[,c(1,3)] # Selecciona las columnas 1 y 3 
+datos[,seq(2,8,3)] # Selecciona las columnas 2, 5, 8
+datos |> dplyr::select(X_A) # Selecciona la columna X_A
+datos |> dplyr::select(X_A:Y_A) # Selecciona las columnas X_A hasta Y_A
+datos |> dplyr::select(-(X_C:Y_B)) # Selecciona las columnas hasta X_B y de Y_C en adelante
+datos |> dplyr::select(starts_with("X")) # Selecciona las columnas que comienzan por X
+datos |> dplyr::select(starts_with(c("x","z"))) # Selecciona columnas que comienzan por x o z
+datos |> dplyr::select(ends_with("b")) # Selecciona columnas que terminan con b o B
+datos |> dplyr::select(!ends_with("a")) # Selecciona columnas que no terminan con a
+datos |> dplyr::select(starts_with("X") | ends_with("b")) # selecciona columnas que comienzan con X o terminan con b
+datos |> dplyr::select(starts_with("X") & ends_with("b")) # selecciona columnas que comienzan con X y terminan con b
+datos |> dplyr::select(contains("_")) # Selecciona columnas que contengan _
+datos |> dplyr::select(everything()) # selecciona todas las columnas
+```
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+#### Funciones derivadas de select
+
+```{r echo=TRUE}
+datos |> dplyr::select_all() # selecciona todas las columnas
+datos |> dplyr::select_if(is.numeric) # selecciona las columnas numéricas
+datos |> dplyr::select_if(is.integer) # selecciona las columnas de tipo entero
+datos |> dplyr::select_if(is.double) # selecciona las columnas de tipo double
+datos |> dplyr::select_if(is.character) # selecciona las columnas de tipo character
+datos |> dplyr::select_if(is.logical) # selecciona las columnas de tipo logico
+datos |> dplyr::select_at(vars(contains("X"),starts_with("Z")),tolower)
+datos |> dplyr::select_at(vars(contains("Z"),starts_with("X")),toupper) 
+```
+
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+#### Selección de variables por fuerza bruta
+
+```{r echo=TRUE}
+p = 3
+S=0;for(i in 0:p){S=S+choose(p,i)};S
+2^p
+
+p = datos |> ncol()
+choose(p,3)
+S=0;for(i in 0:11){S=S+choose(p,i)};S
+2^p
+
+p = 40
+S=0;for(i in 0:p){S=S+choose(p,i)};S
+2^p
+```
+
+
+
+
+Direccionalidad de la búsqueda
+=======================
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+**data: GermanCredit**
+
+1000 personas clasificadas como personas de riesgo crediticio o no
+
+Variable respuesta: Class: 1: Bueno, 2: Malo
+
+Duration: Duración, en meses, del último préstamo
+
+Amount: Monto de crédito
+
+InstallmentRatePercentage: Tasa de pago a plazos en porcentaje de la renta disponible
+
+ResidenceDuration: Número de años en la residencia actual
+
+Age: Edad, en años
+
+NumberExistingCredits: Número de créditos en el banco, etc
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+data(GermanCredit)
+datos6 = GermanCredit |> 
+  dplyr::select(Duration,Amount,InstallmentRatePercentage,
+                ResidenceDuration,Age,NumberExistingCredits,Class)
+```
+
+
+
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+#### Selección directa
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Busqueda_KMejores  <- directSearchAlgorithm(directSearcher = "selectKBest", list(k = 2)) 
+Busqueda_KMejores  <- selectKBest(k = 2) # esta línea y la anterior son equivalentes
+Busqueda_Percentil <- directSearchAlgorithm(directSearcher = "selectPercentile", list(percentile = 40)) 
+Busqueda_Percentil <- selectPercentile(percentile = 40) # esta línea y la anterior son equivalentes  
+```
+
+#### Búsqueda óptima
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Busqueda_BFS   <- searchAlgorithm(searcher = "breadthFirst") 
+Busqueda_BFS   <- breadthFirst() # esta línea y la anterior son equivalentes
+Busqueda_DFS   <- deepFirst() 
+```
+
+#### Búsqueda secuencial  
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Busqueda_SFS   <- searchAlgorithm(searcher = "sequentialForwardSelection")
+Busqueda_SFS   <- sequentialForwardSelection() # esta línea y la anterior son equivalentes
+Busqueda_SBS   <- sequentialBackwardSelection() 
+Busqueda_SFFS  <- sequentialFloatingForwardSelection() 
+Busqueda_SFBS  <- sequentialFloatingBackwardSelection() 
+```
+
+#### Búsqueda probabilística
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Busqueda_LV    <- LasVegas() 
+```
+
+#### Búsqueda local
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Busqueda_HC    <- hillClimbing() 
+
+```
+
+
+#### Búsqueda metaheurística
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Busqueda_Tabu  <- tabu() 
+Busqueda_AntC  <- antColony() 
+Busqueda_GA    <- geneticAlgorithm() 
+Busqueda_SA    <- simulatedAnnealing() 
+Busqueda_Whale <- whaleOptimization() 
+```
+
+
+Filtros
+=======================
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+### Filtros individuales
+
+####  Medidas de atributos individuales 
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Evaluador_Cramer <- filterEvaluator(filter = 'cramer') 
+Evaluador_Cramer <- cramer() # esta línea y la anterior son equivalentes
+Evaluador_Cramer(datos6, 'Class', 'Duration')
+Evaluador_Cramer(datos6, 'Class', 'Amount')
+Evaluador_Cramer(datos6, 'Class', 'Age')
+Evaluador_Cramer(datos6, 'Class', 'InstallmentRatePercentage')
+Evaluador_Cramer(datos6, 'Class', 'NumberExistingCredits')
+directFeatureSelection(datos6, 'Class', Busqueda_KMejores, Evaluador_Cramer)$bestFeatures
+directFeatureSelection(datos6, 'Class', Busqueda_Percentil, Evaluador_Cramer)$bestFeatures
+directFeatureSelection(datos6, 'Class', Busqueda_Percentil, Evaluador_Cramer)$featuresSelected
+directFeatureSelection(datos6, 'Class', Busqueda_Percentil, Evaluador_Cramer)$featuresSelected |> 
+  as.simple.formula('Class')
+```
+
+En resumen, debe definirise el data frame, la variable dependiente de clase, el algoritmo de búsqueda y el filtro, por ejemplo:
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+busqueda_kmejores <- selectKBest(k = 2)  # algoritmo de búsqueda
+evaluador_cramer  <- cramer()            # filtro
+directFeatureSelection(datos6, 'Class', busqueda_kmejores, evaluador_cramer)$bestFeatures
+directFeatureSelection(datos6, 'Class', busqueda_kmejores, evaluador_cramer)$time
+```
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+busqueda_kmejores <- selectKBest(k = 2)  # algoritmo de búsqueda
+Evaluador_Chi2    <- chiSquared()        # filtro del paquete FSinR
+directFeatureSelection(datos6, 'Class', Busqueda_KMejores, Evaluador_Chi2)$bestFeatures
+directFeatureSelection(datos6, 'Class', Busqueda_KMejores, Evaluador_Chi2)$time
+
+indicadores <- chi.squared(Class~., datos6) # filtro en el paquete FSelector
+indicadores |> print()
+indicadores |> cutoff.k(2) 
+indicadores |> cutoff.k(2) |> as.simple.formula("Class") 
+```
+
+**Medidas de atributos individuales: chiSquared, cramer, fscore**
+
+####  Medidas de conjuntos de atributos 
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Evaluador_Relief <- FSinR::relief() # indicar nombre de paquete para no confundir con otro relief 
+directFeatureSelection(datos6, 'Class', Busqueda_Percentil, Evaluador_Relief)$bestFeatures
+directFeatureSelection(datos6, 'Class', Busqueda_Percentil, Evaluador_Relief)$time
+```
+
+
+**Medida de conjuntos de atributos: relief**
+
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+### Filtros colectivos
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+# featureSelection(datos6, 'Class', Busqueda_SFS, Evaluador_Cramer)  # error
+
+Evaluador_Gini <- giniIndex() # filtro de gini
+result1 <- featureSelection(datos6, 'Class', Busqueda_SFS, Evaluador_Gini) 
+result2 <- featureSelection(datos6, 'Class', Busqueda_SFFS, Evaluador_Gini) 
+result3 <- featureSelection(datos6, 'Class', Busqueda_SBS, Evaluador_Gini) 
+result4 <- featureSelection(datos6, 'Class', Busqueda_SFBS, Evaluador_Gini) 
+result5 <- featureSelection(datos6, 'Class', Busqueda_BFS, Evaluador_Gini) 
+result6 <- featureSelection(datos6, 'Class', Busqueda_Tabu, Evaluador_Gini)  
+result1$bestFeatures
+result2$bestFeatures
+result3$bestFeatures
+result4$bestFeatures
+result5$bestFeatures
+result6$bestFeatures
+result1$time
+result2$time
+result3$time
+result4$time
+result5$time
+result6$time
+```
+
+¿Si el conjunto de variables es unitario? 
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Evaluador_Gini(datos6, 'Class', 'Duration')
+Evaluador_Gini(datos6, 'Class', 'Amount')
+Evaluador_Gini(datos6, 'Class', 'Age')
+Evaluador_Gini(datos6, 'Class', 'InstallmentRatePercentage')
+Evaluador_Gini(datos6, 'Class', 'ResidenceDuration')
+Evaluador_Gini(datos6, 'Class', 'NumberExistingCredits')
+```
+
+En vez de Evaluador_Gini, se pueden utilizar otros criterios de filtro  para conjunto de variables: medidas de consistencia, de dependencia, de distancia. 
+
+Se puede buscar en la ayuda ?filterEvaluator 
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Evaluador_Gini <- filterEvaluator(filter = 'giniIndex') # filtro con medida de información 
+Evaluador_RSC  <- filterEvaluator(filter = 'roughsetConsistency') # filtro con medida de consistencia
+Evaluador_R2   <- filterEvaluator(filter = 'determinationCoefficient') # filtro con medida de dependencia
+```
+
+**Medidas de conjuntos de atributos**
+
+- binaryConsistency - de consistencia
+
+- determinationCoefficient - de dependencia (para atributos continuos)
+
+- gainRatio - de información
+
+- giniIndex - de información (para atributos discretos)
+
+- IEConsistency - de consistencia
+
+- Jd - de información
+
+- MDLC  - de información
+
+- mutualInformation - de información
+
+- roughsetConsistency - de consistencia
+
+- ReliefFeatureSetMeasure - de distancia o separabilidad
+
+- symmetricalUncertain - de información
+
+Medida de consistencia usando FSelector::consistency
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+(subset <- consistency(Class~., datos6))
+as.simple.formula(subset, "Class")
+```
+
+Más sobre FSelector: https://cran.r-project.org/web/packages/FSelector/FSelector.pdf
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+### Filtros híbridos
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Busqueda_Hibrida <- hybridSearchAlgorithm('LCC')           # búsqueda
+Evaluador_Chi2   <- filterEvaluator(filter = 'chiSquared') # filtro individual
+Evaluador_Gini   <- filterEvaluator(filter = 'giniIndex')  # filtro colectivo
+#  hybridFeatureSelection(datos6, 'Class', Busqueda_Hibrida, Evaluador_Gini, Evaluador_Chi2) # error
+hybridFeatureSelection(datos6, 'Class', Busqueda_Hibrida, Evaluador_Chi2, Evaluador_Gini) # (indiv, colect)
+# hybridFeatureSelection(datos6, 'Class', Busqueda_Hibrida, Evaluador_Chi2, Evaluador_Chi2) # error
+hybridFeatureSelection(datos6, 'Class', Busqueda_Hibrida, Evaluador_Gini, Evaluador_Gini) # (colect, colect)
+```
+
+El orden debe ser (data frame, variable Y, algoritmo hibrido, filtro ind o conj, filtro conj)
+
+
+Envolturas (wrappers)
+=======================
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+Evaluador_bglm <- wrapperEvaluator(learner          = "bayesglm", 
+                                   resamplingParams = list(method = "repeatedcv", 
+                                                           repeats = 3)) 
+resultado_bglm <- featureSelection(datos6, 'Class', Busqueda_SFS, Evaluador_bglm) 
+resultado_bglm$bestFeatures
+resultado_bglm$time
+```
+
+resamplingParams permite definir los mismos argumentos que trainControl en caret
+
+fittingParams permite indicar valores para tuning de hiperparámetros 
+
+no todos los métodos / modelos tienen hiperparámetros
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+validacion    <- list(method = "repeatedcv", repeats = 10)
+Evaluador_lda <- wrapperEvaluator(learner          = 'lda',
+                                  resamplingParams = validacion)
+resultado_lda <- featureSelection(datos6, 'Class', Busqueda_SFS, Evaluador_lda)
+resultado_lda$bestFeatures
+resultado_lda$time
+```
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+validacion    <- list(method = "repeatedcv", repeats = 3)
+tuning        <- list(tuneGrid = expand.grid(k = c(1:12)))
+Evaluador_KNN <- wrapperEvaluator(learner          = "knn",
+                                  resamplingParams = validacion,
+                                  fittingParams    = tuning) 
+resultado_knn <- featureSelection(datos6, 'Class', Busqueda_SFFS, Evaluador_KNN) 
+resultado_knn$bestFeatures
+resultado_knn$time
+```
+
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+validacion      <- list(method = "repeatedcv", repeats = 5)
+tuning          <- list(tuneGrid = expand.grid(cp = seq(0,0.1,0.01)))
+Evaluador_rpart <- wrapperEvaluator(learner          = 'rpart',
+                                    resamplingParams = validacion,
+                                    fittingParams    = tuning) 
+resultado_rpart <- featureSelection(datos6, 'Class', Busqueda_SFS, Evaluador_rpart) 
+resultado_rpart$bestFeatures
+resultado_rpart$time
+```
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+tuning       <- list(tuneGrid = expand.grid(mtry = round(sqrt(ncol(datos6)))),
+                     trace    = FALSE)
+Evaluador_rf <- wrapperEvaluator(learner = 'rf',
+                                 fittingParams = tuning) 
+resultado_rf <- featureSelection(datos6, 'Class', Busqueda_SFS, Evaluador_rf)
+resultado_rf$bestFeatures
+resultado_rf$time
+```
+
+Otros métodos de envoltura: Recursive Feature Elimination, RFE (caret::rfeControl)
+
+BORUTA
+=======================
+
+Column {.col-md-4}
+-----------------------------------------------------------------------
+
+```{r message=FALSE, warning=FALSE, echo=TRUE}
+boruta <- Boruta(Class ~ ., data = datos6, doTrace = 0, maxRuns = 200) 
+boruta |> print()
+boruta |> plot(las = 2, cex.axis = 0.7)
+boruta |> attStats()
+boruta |> plotImpHistory()
+boruta$timeTaken
+
+boruta2 <- Boruta(Class ~ ., data = datos6, doTrace = 0, maxRuns = 1500) 
+boruta2 |> print()
+boruta2 |> plot(las = 2, cex.axis = 0.7)
+boruta2 |> attStats()
+boruta2 |> plotImpHistory()
+boruta2$timeTaken
+
+boruta3<- Boruta(Class ~ ., data = datos6, doTrace = 0, maxRuns = 1500, pValue = 0.01/10) 
+boruta3 |> print()
+boruta3 |> plot(las = 2, cex.axis = 0.7)
+boruta3 |> attStats()
+boruta3 |> plotImpHistory()
+boruta3$timeTaken
+
+boruta4 <- boruta |> TentativeRoughFix() 
+boruta4 |> print()
+boruta4 |> plot(las = 2, cex.axis = 0.7)
+boruta4 |> attStats()
+boruta4 |> plotImpHistory()
+boruta4$originalDecision
+boruta4$finalDecision
+
+```
+
